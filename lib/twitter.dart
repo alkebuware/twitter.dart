@@ -8,7 +8,10 @@ import 'src/client.dart';
 /// A Class for Twitter
 class Twitter {
   /// Twitter API Endpoint
-  final String baseUrl = 'https://api.twitter.com/1.1/';
+
+  final String scheme = "https";
+  final String host = "api.twitter.com";
+  final String version = "1.1";
 
   /// oauth.Tokens for [Client]
   oauth.Tokens oauthTokens;
@@ -58,16 +61,23 @@ class Twitter {
   /// [endPoint] is REST API Name of Twitter. for example "statuses/mentions_timeline.json".
   /// [body] is HTTP Request's body.
   Future<http.Response> request(String method, String endPoint,
-      {Map<String, String> body}) {
+      {Map<String, String> body, Map<String, String> parameters}) {
     if (_completer.isCompleted) {
       _completer = new Completer<http.Response>.sync();
     }
-    var requestUrl = baseUrl + endPoint;
-    _request(method, requestUrl, body: body);
+
+    Uri requestUrl = Uri(
+        scheme: scheme,
+        host: host,
+        path: "$version/$endPoint",
+        queryParameters: parameters);
+
+    _request(method, requestUrl.toString(), body: body, parameters: parameters);
     return _completer.future;
   }
 
-  void _request(String method, String requestUrl, {Map body}) async {
+  void _request(String method, String requestUrl,
+      {Map body, Map<String, String> parameters}) async {
     if (twitterClient.client == null) {
       twitterClient = new Client(oauthTokens);
     }
